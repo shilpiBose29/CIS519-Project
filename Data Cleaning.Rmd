@@ -1,0 +1,73 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+<http://insideairbnb.com/get-the-data.html>
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+Import Data:
+
+```{r}
+library(readr)
+Asheville_listings <- read_csv("Data/Asheville/Asheville-listings.csv", 
+     col_types = cols(calculated_host_listings_count = col_skip(), 
+         calendar_last_scraped = col_skip(), 
+         calendar_updated = col_skip(), city = col_skip(), 
+         cleaning_fee = col_number(), country = col_skip(), 
+         country_code = col_skip(), description = col_skip(), 
+         extra_people = col_number(), first_review = col_date(format = "%Y-%m-%d"), 
+         has_availability = col_skip(), host_about = col_skip(), 
+         host_acceptance_rate = col_number(), 
+         host_has_profile_pic = col_skip(), 
+         host_id = col_skip(), host_identity_verified = col_logical(), 
+         host_is_superhost = col_logical(), 
+         host_location = col_skip(), host_name = col_skip(), 
+         host_neighbourhood = col_skip(), 
+         host_picture_url = col_skip(), host_response_rate = col_number(), 
+         host_response_time = col_skip(), 
+         host_since = col_date(format = "%Y-%m-%d"), 
+         host_thumbnail_url = col_skip(), 
+         host_url = col_skip(), instant_bookable = col_logical(), 
+         is_location_exact = col_logical(), 
+         jurisdiction_names = col_skip(), 
+         last_review = col_date(format = "%Y-%m-%d"), 
+         last_scraped = col_skip(), last_searched = col_skip(), 
+         license = col_skip(), listing_url = col_skip(), 
+         market = col_skip(), medium_url = col_skip(), 
+         monthly_price = col_number(), name = col_skip(), 
+         neighborhood_overview = col_skip(), 
+         neighbourhood_cleansed = col_skip(), 
+         notes = col_skip(), picture_url = col_skip(), 
+         price = col_number(), region_id = col_skip(), 
+         region_name = col_skip(), region_parent_id = col_skip(), 
+         require_guest_phone_verification = col_logical(), 
+         require_guest_profile_picture = col_logical(), 
+         requires_license = col_logical(), 
+         scrape_id = col_skip(), security_deposit = col_number(), 
+         smart_location = col_skip(), space = col_skip(), 
+         state = col_skip(), street = col_skip(), 
+         summary = col_skip(), thumbnail_url = col_skip(), 
+         transit = col_skip(), weekly_price = col_number(), 
+         xl_picture_url = col_skip(), zipcode = col_skip()))
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+TODO
+
+- [ ] how is `host_listing_count` different from `host_total_listing_count`?
+- [ ] Expand remaining string-typed columns into multiple columns of boolean features. Make sure the new column names stay consistent across datasets.
+- [ ] let's forget about it.
+
+Let's try the summarized CSV for listings:
+
+```{r}
+
+```
+
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file).

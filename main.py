@@ -10,6 +10,8 @@ from __future__ import division
 from __future__ import print_function
 import numpy as np
 import pandas as pd
+from surprise import evaluate, print_perf
+
 
 #%% my print function
 
@@ -35,17 +37,45 @@ def p(*argv):
 use_mini = False
 verbose  = True
 random_state = 42 # Using 42, because it's the Answer to the Ultimate Question of Life, the Universe, and Everything.
-csv_file = 'datasets/Asheville/Asheville-processed2.csv'
+csv_file = 'datasets/Paris/Paris_reviews_with_sentiment_5K-15K.csv'
 
 
 #%% Import data:
 
 p('Reading dataset from', csv_file, '...')
-datasets = pd.read_csv(csv_file).groupby('city')
+df = pd.read_csv(csv_file, header = 0,  usecols = ['reviewer_id', 'listing_id', 'Polarity'])
 
-for city_name, indices in datasets.groups.items():
-    p('\t', len(indices), '\tlistings in', city_name, '.')
+from surprise import Dataset, Reader
+
+# A reader is still needed but only the rating_scale param is requiered.
+reader = Reader(rating_scale=(-1, 1))
+# The columns must correspond to user id, item id and ratings (in that order).
+data = Dataset.load_from_df(df, reader)
+
+# Retrieve the trainset.
+trainset = data.build_full_trainset()
+
+
+#%% Initialize the algorithm:
+
+from surprise import SVD
+algo = SVD()
+algo.train(trainset)
+evaluate(algo, data)
 
 #%%
-    
-data_Asheville = datasets.get_group('Asheville')
+
+
+uid = str(50345378)  # raw user id (as in the ratings file). They are **strings**!
+iid = str(4596040)  # raw item id (as in the ratings file). They are **strings**!
+
+# get a prediction for specific users and items.
+pred = algo.predict(uid, iid, verbose=True)
+
+p('Demo prediction: User #{0} should rate {1:.3f} on Listing #{2}.'.format(pred.uid, pred.est, pred.iid))
+
+
+
+
+
+

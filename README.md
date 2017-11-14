@@ -30,7 +30,15 @@ Airbnb Recommender System
 
 - **Property Type**: Expanded `property_type` into` ['POPTY=Apartment', 'POPTY=Bed & Breakfast', 'POPTY=Bungalow', 'POPTY=Cabin', 'POPTY=Camper/RV', 'POPTY=Chalet', 'POPTY=Condominium', 'POPTY=Dorm', 'POPTY=Earth House', 'POPTY=House', 'POPTY=Loft', 'POPTY=Other', 'POPTY=Tent', 'POPTY=Townhouse', 'POPTY=Treehouse', 'POPTY=Villa', 'POPTY=Yurt']` .
 
-- **Bed Type**: Expanded `bed_type` into `['BED=Airbed', 'BED=Couch', 'BED=Futon', 'BED=Pull-out Sofa', 'BED=Real Bed']` .
+- **Bed Type**: The `bed_type` column. Possible values: `1,2,3,4,5`, with mapping:
+
+  | Meaning         | Value |
+  | --------------- | ----- |
+  | Shared room     | 1     |
+  | Private room    | 2     |
+  | Entire home/apt | 3     |
+
+- Expanded `bed_type` into `['BED=Airbed', 'BED=Couch', 'BED=Futon', 'BED=Pull-out Sofa', 'BED=Real Bed']` .
 
 ## List of Features Dropped
 

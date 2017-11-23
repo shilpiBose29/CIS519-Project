@@ -23,15 +23,17 @@ repetitions = [2,3,4,7,10,15]
 
 indice = [1,2,3,6,9,14]
 
-folder = 'top_users/'
-
 for i in range(len(indice)):
     top_users = reviewers.loc[reviewers['id'] > indice[i]]
-    file_name = "top_users_"+str(repetitions[i])+"_reviews.csv"
     
-    path = folder+file_name
+    users_list = top_users.reviewer_id
     
-    top_users.to_csv(path, sep=',', encoding='utf-8')
+    reviews_reduced = all_cities[all_cities.reviewer_id.isin(users_list)]
+    
+    file_name = "reviews_by_top_users_"+str(repetitions[i])+"_reviews.csv"
+
+    reviews_reduced.to_csv(file_name, sep=',', encoding='utf-8')
     print(i)
 
 print('done')
+

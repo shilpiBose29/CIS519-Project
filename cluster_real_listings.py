@@ -10,6 +10,7 @@ import pandas as pd
 from sklearn.cluster import KMeans
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from sklearn import preprocessing
 import csv
 
@@ -46,12 +47,12 @@ def clean_data(X):
     return X
 
 
-def plot_pretty_graph(X_transformed,kmeans):
+def plot_pretty_graph(X_transformed,kmeans,index1,index2):
     # Step size of the mesh. Decrease to increase the quality of the VQ.
     h = .02     # point in the mesh [x_min, x_max]x[y_min, y_max].
     
-    x_min, x_max = X_transformed[:, 0].min() - 1, X_transformed[:, 0].max() + 1
-    y_min, y_max = X_transformed[:, 1].min() - 1, X_transformed[:, 1].max() + 1
+    x_min, x_max = X_transformed[:, index1].min() - 1, X_transformed[:, index1].max() + 1
+    y_min, y_max = X_transformed[:, index2].min() - 1, X_transformed[:, index2].max() + 1
     xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
     
     # Obtain labels for each point in mesh. Use last trained model.
@@ -67,7 +68,7 @@ def plot_pretty_graph(X_transformed,kmeans):
                cmap=plt.cm.Paired,
                aspect='auto', origin='lower')
     
-    plt.plot(X_transformed[:, 0], X_transformed[:, 1], 'k.', markersize=2)
+    plt.plot(X_transformed[:, index1], X_transformed[:, index2], 'k.', markersize=2)
     # Plot the centroids as a white X
     centroids = kmeans.cluster_centers_
     plt.scatter(centroids[:, 0], centroids[:, 1],
@@ -79,7 +80,30 @@ def plot_pretty_graph(X_transformed,kmeans):
     plt.ylim(y_min, y_max)
     plt.xticks(())
     plt.yticks(())
+    plt.label(Z)
     plt.show()
+    
+
+def plot_pretty_3Dgraph(X_transformed,cluster_labels):
+    # Step size of the mesh. Decrease to increase the quality of the VQ.
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    
+    print X_transformed.shape
+    print len(cluster_labels)
+
+    
+    colors = ['b','g','r','c','m','y','k','w']
+    
+    for i in range(2000):
+        xs = X_transformed[i][0]
+        ys = X_transformed[i][1]
+        zs = X_transformed[i][2]
+        indice = cluster_labels[i]
+        ax.scatter(xs, ys, zs, c=colors[indice], marker='o')
+        
+    plt.show()
+    
 
 def merge_ids_PCS_cluster(ids,PCs,clusters):
     ids = ids.as_matrix()
@@ -117,39 +141,37 @@ print var1
 
 #FIRST TWO EXPLAIN 70%
 
-coefficients, X_transformed = apply_PCA(data,2)
+coefficients3, X_transformed3 = apply_PCA(data,3)
+coefficients2, X_transformed2 = apply_PCA(data,2)
 
-coefficients_nice=np.round(coefficients, decimals=4)*100
+coefficients_nice3=np.round(coefficients3, decimals=4)*100
 
-print coefficients_nice
-
-print X_transformed[0:10]
+print coefficients_nice3
 
 
-x = X_transformed[:,0]
-y = X_transformed[:,1]
+x = X_transformed2[:,0]
+y = X_transformed2[:,1]
 
 
 #DEFINE THE CLUSTERING FUNCTION
 kmeans = KMeans(n_clusters=8)
 
-kmeans.fit(X_transformed)
+kmeans.fit(X_transformed3)
 
-cluster_labels = kmeans.predict(X_transformed)
-
-
-plot_pretty_graph(X_transformed,kmeans)
+cluster_labels = kmeans.predict(X_transformed3)
 
 
-output = merge_ids_PCS_cluster(ids,X_transformed,cluster_labels)
+plot_pretty_3Dgraph(X_transformed3,cluster_labels)
+
+
+output = merge_ids_PCS_cluster(ids,X_transformed3,cluster_labels)
 
 print output[0]
 
-header = ["id","PC1","PC2","cluster"]
+header = ["id","PC1","PC2","PC3","cluster"]
 
 with open('clusterized_listings.csv', 'a') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(header)
     for i in range(len(output)):
         writer.writerow(output[i])
-

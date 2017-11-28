@@ -167,7 +167,7 @@ plot_pretty_3Dgraph(X_transformed3,cluster_labels)
 output = merge_ids_PCS_cluster(ids,X_transformed3,cluster_labels)
 
 print output[0]
-
+'''
 header = ["id","PC1","PC2","PC3","cluster"]
 
 with open('clusterized_listings.csv', 'a') as csvfile:
@@ -175,3 +175,5 @@ with open('clusterized_listings.csv', 'a') as csvfile:
     writer.writerow(header)
     for i in range(len(output)):
         writer.writerow(output[i])
+        
+'''

@@ -68,15 +68,15 @@ def apply_randomized_PCA(X,comps):
 def merge_data_cluster(data,clusters):
     
 
-    print data.shape
+    #print data.shape
     #r = len(clusters)
     #clusters = clusters.reshape((r,1))
     clusters_df = pd.DataFrame({'clusters':clusters})
-    print clusters_df.shape
+    #print clusters_df.shape
     
     final = pd.concat([data.reset_index(),clusters_df.reset_index()],axis=1)
     
-    print final.shape
+    #print final.shape
 
     return final
 
@@ -122,7 +122,12 @@ cluster_labels = kmeans.predict(df6)
 
 finale = merge_data_cluster(df6,cluster_labels)
 
+
+filename1 = "reviewers_rating_per_listing_cluster.csv"
+finale.to_csv(filename1, sep=',', encoding='utf-8')
 print finale[0:10]
+
+
 
 finale2 = pd.melt(finale, id_vars=['reviewer_id', 'clusters'], 
             value_vars=list(finale.columns[1:9]), # list of days of the week
@@ -137,6 +142,10 @@ finale3 = finale3.reset_index()
 
 finale4 = finale3.pivot(index='user_cluster', columns='clusters', values='Polarity')
 
+filename2 = "user_cluster_rating_per_listing_cluster.csv"
+finale4.to_csv(filename2, sep=',', encoding='utf-8')
+
 print finale4
+
 #coefficients3, X_transformed3 = apply_PCA(data,3)
 

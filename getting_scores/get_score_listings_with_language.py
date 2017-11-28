@@ -9,7 +9,7 @@ Created on Sun Nov 26 15:32:38 2017
 import pandas as pd
 from textblob import TextBlob
 
-filename = "reviews_with_languages_detected.csv"
+filename = "../../reviews_with_languages_detected.csv"
 
 df = pd.read_csv(filename, sep=',')
 
@@ -47,9 +47,11 @@ sentiment_df.columns = ['Polarity', 'Subjectivity']
 
 listings_with_sentiment = pd.concat([df, sentiment_df], axis=1, join_axes=[df.index])
 
-file_name = 'listings_with_score.csv'
+print listings_with_sentiment
 
-listings_with_sentiment.to_csv(file_name, sep=',', encoding='utf-8')
+#file_name = 'listings_with_score.csv'
+
+#listings_with_sentiment.to_csv(file_name, sep=',', encoding='utf-8')
 
 print "done"
     

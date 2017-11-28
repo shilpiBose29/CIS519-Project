@@ -149,5 +149,5 @@ vignettes/*.pdf
 
 # End of https://www.gitignore.io/api/r,python,jupyternotebook
 
-datasets/*
+
 .Rproj.user

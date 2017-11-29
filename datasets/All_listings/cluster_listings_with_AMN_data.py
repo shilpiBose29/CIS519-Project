@@ -186,6 +186,8 @@ listings_clusters_and_PCAs = merge_ids_PCS_cluster(ids,cluster_labels,listings_w
 enduser_filename_path = "../recommender_system/enduser_listings_ratings.csv" 
 enduser_preferences = pd.read_csv(enduser_filename_path, sep=',')
 
+ratings = enduser_preferences.ratings
+
 
 
 #NOW GETTING ALL LISTINGS
@@ -199,17 +201,15 @@ enduser_listings_with_AMN = enduser_preferences.merge(all_listings, on='listing_
 enduser_listings_with_AMN = enduser_listings_with_AMN[['listing_id','amenities']]
 amenities_col = enduser_listings_with_AMN['amenities']
 
-print "1", enduser_preferences
-print "2", enduser_listings_with_AMN
 
 enduser_listings_with_AMN_binary = get_amenities_listings_original(enduser_preferences,enduser_listings_with_AMN)
 
-print enduser_listings_with_AMN_binary.shape
+
 
 #GET THE DOCUMENT THAT HAS THE LOADINGS FOR THE DIFFERENT AMENITIES
 filename = "sample_AMN_PCA_U.csv"
 PCA_loadings = pd.read_csv(filename, sep=',')
-print PCA_loadings.shape
+
 
 columns1 = ["PC1","PC2","PC3","PC4","PC5","PC6","PC7","PC8","PC9","PC10"]
 columns2 = ["PC11","PC12","PC13","PC14","PC15","PC16","PC17","PC18","PC19","PC20"]
@@ -220,12 +220,21 @@ enduser_listings_PCA.set_index(enduser_listings_with_AMN.listing_id, inplace=Tru
 
 enduser_listings_PCA = enduser_listings_PCA*100 
 
-print enduser_listings_PCA
+#print enduser_listings_PCA
 
 enduser_cluster_labels = kmeans.predict(enduser_listings_PCA)
 
-print enduser_cluster_labels
+enduser_cluster_labels = pd.DataFrame(enduser_cluster_labels.reshape((len(enduser_cluster_labels),1)),columns =['listing_cluster'])
+enduser_cluster_labels.set_index(enduser_listings_with_AMN.listing_id, inplace=True)
+ratings = pd.DataFrame(ratings,columns=['ratings'])
+ratings.set_index(enduser_listings_with_AMN.listing_id, inplace=True)
 
+enduser_PCAs_with_cluster = pd.concat([enduser_listings_PCA,enduser_cluster_labels,ratings],axis=1)
 
+#need to add the rating
+
+enduser_preference_profile = enduser_PCAs_with_cluster.groupby(['listing_cluster'])['ratings'].mean()
+
+print enduser_preference_profile
 
 

@@ -238,3 +238,5 @@ enduser_preference_profile = enduser_PCAs_with_cluster.groupby(['listing_cluster
 print enduser_preference_profile
 
 
+
+

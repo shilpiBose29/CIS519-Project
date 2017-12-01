@@ -16,6 +16,8 @@ import csv
 from sklearn.decomposition import PCA
 from sklearn.feature_extraction.text import CountVectorizer
 
+import pickle
+
 
 
 def check_PCA(X):
@@ -177,6 +179,12 @@ listings_with_AMN_PCAs = listings_with_AMN_PCAs.drop(['ID'],axis=1)
 kmeans = KMeans(n_clusters=8)
 
 kmeans.fit(listings_with_AMN_PCAs)
+
+model = pickle.dumps(kmeans)
+with open("kmeans_model.pkl","w") as f:
+    f.write(model)
+
+
 cluster_labels = kmeans.predict(listings_with_AMN_PCAs)
 listings_clusters_and_PCAs = merge_ids_PCS_cluster(ids,cluster_labels,listings_with_AMN_PCAs)
 
@@ -237,7 +245,9 @@ enduser_preference_profile = pd.DataFrame(enduser_PCAs_with_cluster.groupby(['li
 
 #enduser_preference_profile['listing_cluster'] = enduser_preference_profile.index
 
-return enduser_preference_profile
+filename = "enduser_preference_profile.csv"
+print enduser_preference_profile
+enduser_preference_profile.to_csv(filename)
 
 
 

@@ -151,3 +151,5 @@ vignettes/*.pdf
 
 
 .Rproj.user
+
+datasets/All_listings/sample_listings.csv

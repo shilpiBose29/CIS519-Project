@@ -90,13 +90,20 @@ grid_search.best_score['RMSE']
 trainset = data.build_full_trainset()
 algo.train(trainset)
 
-all_listings = user_ratings_df['listing_id'].unique()
-
 enduserID = str(19634955)
 print('Hello, User #'+enduserID+'.')
-results = pd.DataFrame({'Listing ID': all_listings, 
-                        'Predicted Rating From You': [algo.predict(enduserID, str(i)).est for i in all_listings]})\
-         .sort_values('Predicted Rating From You', ascending=False)
+
+destCity = 'Paris'
+print('We are finding you your next stay in', destCity, '.')
+
+# read details of all listings:
+listings_df = pd.read_csv('datasets/All_listings/sample_listings.csv', index_col='id')
+# Get only the ones in this city:
+listingsNames_inThisCity_df = listings_df.loc[listings_df['city'] == destCity][['name']]
+
+listingsNames_inThisCity_df['Predicted Rating From You'] = [algo.predict(enduserID, str(i)).est for i in listingsNames_inThisCity_df.index]
+results_df = listingsNames_inThisCity_df.sort_values('Predicted Rating From You', ascending=False).head()
+
 print('Based on your previous ratings, here are our suggestions for your future stay:')
-print(tabulate(results.head(), headers='keys', showindex=False, tablefmt="fancy_grid"))
+print(tabulate(results_df, headers=['Name', 'Predicted Rating From You'], showindex=False, tablefmt="fancy_grid"))
 print('(root-mean-square error (RMSE): ',grid_search.best_score['RMSE'], ', better smaller.)')

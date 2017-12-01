@@ -44,22 +44,19 @@ def p(*argv):
 
 #%% Development -- optimize the classifier!
 
-#remove_non_numerical_rows_in_column = lambda df, col: df[df[col].apply(lambda x: x.isnumeric())]
+listize = lambda df: [[i, j, df.loc[i,j]] for i in eigenmatrix_df.index for j in eigenmatrix_df.columns]
 
-# Read data:
-user_ratings_df = pd.read_csv('getting_scores/listings_with_score.csv', usecols=["reviewer_id", "listing_id", "Polarity"])
-
-# remove rows with non-numerical values in the column "Polarity":
-user_ratings_df = user_ratings_df[pd.to_numeric(user_ratings_df['Polarity'], errors='coerce').notnull()]
+user_ratings_df = pd.DataFrame(listize(eigenmatrix_df), columns = ['groupID', 'clusterID', 'rating'])
 
 # A reader is still needed but only the rating_scale param is required.
-reader = Reader(rating_scale=(-1, 1))
+reader = Reader(rating_scale=(user_ratings_df.rating.min(),
+                              user_ratings_df.rating.max()))
 
 # The columns must correspond to user id, item id and ratings (in that order).
-data = Dataset.load_from_df(user_ratings_df[['reviewer_id', 'listing_id', 'Polarity']], reader)
+data = Dataset.load_from_df(user_ratings_df, reader)
 
 # split it into 3 folds for cross-validation.
-data.split(n_folds=3)
+data.split(n_folds=5)
 
 # We'll use the famous SVD algorithm.
 algo = SVD()
@@ -90,8 +87,8 @@ grid_search.best_score['RMSE']
 trainset = data.build_full_trainset()
 algo.train(trainset)
 
-enduserID = str(19634955)
-print('Hello, User #'+enduserID+'.')
+groupID = str(5)
+print('Hello, User #'+groupID+'.')
 
 destCity = 'Paris'
 print('We are finding you your next stay in', destCity, '.')
@@ -101,7 +98,7 @@ listings_df = pd.read_csv('datasets/All_listings/sample_listings.csv', index_col
 # Get only the ones in this city:
 listingsNames_inThisCity_df = listings_df.loc[listings_df['city'] == destCity][['name']]
 
-listingsNames_inThisCity_df['Predicted Rating From You'] = [algo.predict(enduserID, str(i)).est for i in listingsNames_inThisCity_df.index]
+listingsNames_inThisCity_df['Predicted Rating From You'] = [algo.predict(groupID, str(i)).est for i in listingsNames_inThisCity_df.index]
 results_df = listingsNames_inThisCity_df.sort_values('Predicted Rating From You', ascending=False).head()
 
 print('Based on your previous ratings, here are our suggestions for your future stay:')

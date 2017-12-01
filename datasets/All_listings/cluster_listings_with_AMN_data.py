@@ -191,7 +191,7 @@ ratings = enduser_preferences.ratings
 
 
 #NOW GETTING ALL LISTINGS
-all_listings_file = "../../../all_listings.csv" 
+all_listings_file = "../../../all_listings.csv"
 all_listings = pd.read_csv(all_listings_file, sep=',')
 all_listings=all_listings.rename(columns = {'id':'listing_id'})
 
@@ -233,9 +233,11 @@ enduser_PCAs_with_cluster = pd.concat([enduser_listings_PCA,enduser_cluster_labe
 
 #need to add the rating
 
-enduser_preference_profile = enduser_PCAs_with_cluster.groupby(['listing_cluster'])['ratings'].mean()
+enduser_preference_profile = pd.DataFrame(enduser_PCAs_with_cluster.groupby(['listing_cluster'])['ratings'].mean())
 
-print enduser_preference_profile
+#enduser_preference_profile['listing_cluster'] = enduser_preference_profile.index
+
+return enduser_preference_profile
 
 
 

@@ -5,7 +5,6 @@ Created on Tue Nov 28 13:33:42 2017
 
 @author: lmy
 """
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -15,7 +14,6 @@ import pickle
 from tabulate import tabulate
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.neighbors import KNeighborsClassifier as KNN
-from scipy.sparse import load_npz, save_npz
 
 #%% Configurations
 
@@ -34,34 +32,28 @@ sample_listings_amenities_csv = 'datasets/All_listings/sample_listings_amenities
 #sample_listings_amenities_expanded_csv = 'datasets/All_listings/sample_listings_amenities_expanded.csv'
 #sample_listings_amenities_expanded_npz = 'datasets/All_listings/sample_listings_amenities_expanded.npz'
 PCA_loadings_csv = 'datasets/All_listings/sample_AMN_PCA_U.csv'
+listings_with_score_csv = 'getting_scores/listings_with_score.csv'
 
 amenity_vectorizer_pkl = 'amenity_vectorizer.pkl'
 
 #%% my print function
 
-import datetime
-from pprint import pformat as pf
-dt = lambda: datetime.datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
-filename = datetime.datetime.now().strftime("Output %Y-%m-%d %H-%M-%S.txt")
-def p(*argv):
-    if not verbose: return
-    string = dt()
-    for i in argv:
-        if type(i) == str: string += ' '+i
-        else: string += ' '+pf(i)
-    with open(filename, 'a') as f: print(string, file = f)
-    print(string)
+p = print
 
 #%% Read datasets:
 
-user_groups_df  = pd.read_csv(user_groups_csv, index_col = 'reviewer_id').rename(columns = {'clusters': 'groupID'})
-eigenmatrix_df  = pd.read_csv(eigenmatrix_csv).drop('user_cluster', axis=1)
-your_ratings_to_listings_df = pd.read_csv(your_ratings_to_listings_csv)
-listing_clusters_df         = pd.read_csv(listing_clusters_csv)
-listings_details_df         = pd.read_csv(listings_details_csv)
-PCA_loadings_df = pd.read_csv(PCA_loadings_csv)
+user_groups_df  = pd.read_csv(user_groups_csv, encoding='utf-8', index_col = 'reviewer_id').rename(columns = {'clusters': 'groupID'})
+eigenmatrix_df  = pd.read_csv(eigenmatrix_csv, encoding='utf-8').drop('user_cluster', axis=1)
+your_ratings_to_listings_df = pd.read_csv(your_ratings_to_listings_csv, encoding='utf-8')
+listing_clusters_df         = pd.read_csv(listing_clusters_csv, encoding='utf-8')
+listing_details_df          = pd.read_csv(listings_details_csv, encoding='utf-8', index_col = 'id', usecols = ['id', 'name', 'city'])
+PCA_loadings_df = pd.read_csv(PCA_loadings_csv, encoding='utf-8')
 amn_all_col = pd.read_csv(all_listings_csv, usecols=['id','amenities'], index_col='id')['amenities'].dropna().str[1:-1]
-
+listings_with_score_df = pd.read_csv(listings_with_score_csv, encoding='utf-8', header=0, 
+                                     usecols=['listing_id','reviewer_id','Polarity'], 
+                                     na_values = {'listing_id': 'listing_id', 
+                                                  'reviewer_id': 'reviewer_id', 
+                                                  'Polarity': 'not available'}).dropna()
 
 kmeans = pickle.load(open("datasets/All_listings/kmeans_model.pkl", 'rb'))
 
@@ -107,11 +99,11 @@ def listing_clusterer(your_ratings_to_listings):
 
 p('Please enter a list of listings and your ratings of them:')
 your_ratings_to_listings = pd.read_csv(your_ratings_to_listings_csv, index_col = 'listing_id').ratings
-p('\n', your_ratings_to_listings)
+p('-'*30, '\n', your_ratings_to_listings, '\n', '-'*30)
 
-p('(For debug only) Based on your input, we think that you have the following ratings to these types of places:')
+p('Based on your input, we think that you have the following ratings to these types of places:')
 your_ratings_to_clusters = listing_clusterer(your_ratings_to_listings)
-p('\n', your_ratings_to_clusters)
+p(tabulate(pd.DataFrame(your_ratings_to_clusters), headers=['Cluster ID', 'Estimated Rating From You'], tablefmt="fancy_grid"))
 
 
 #%% Identify which group this enduser belongs to:
@@ -127,21 +119,33 @@ p('You people love listings in cluster', your_clusterID, '.')
 
 #%% Sort clusters by ratings from this group:
 
-
-def resort_according_to_peers(peerIDs, listingIDs):
+def get_ranking(your_groupID,your_clusterID):
     '''Returns the list of listingIDs sorted to their ratings as provided by users specified peerIDs.'''
-    
-    users_in_this_group        = user_groups_df[user_groups_df.groupID == groupID]
-    #.............
-    pass
-
-listingIDs_in_this_cluster = resort_according_to_peers(
-    peerIDs = your_peerIDs,
-    listingIDs = listing_clusters_df[listing_clusters_df.index == clusterID].index)
-
-picked_listings_details_df = listings_details_df[listingIDs_in_this_cluster]
+    peersIDs = user_groups_df[user_groups_df.groupID == your_groupID].index
+    # get a mapping of all listings to their clusters:
+    listings = listing_clusters_df[['id','listing_AMN_cluster']]\
+                .astype(int)\
+                .rename(columns = {
+                        'id':'listing_id', 
+                        'listing_AMN_cluster': 'cluster_id'})
+    # get a list of listings in your favorite cluster:
+    listings = listings[listings.cluster_id==your_clusterID].listing_id.tolist()
+    # narrow down listings by clusters:
+    listings_with_score = listings_with_score_df[listings_with_score_df.listing_id.isin(listings)]
+    # narrow down listings by peers:
+    listings_with_score = listings_with_score[listings_with_score.reviewer_id.isin(peersIDs)]
+    # average_ratings_of_suggested_listings_by_peers :
+    return listings_with_score.groupby(['listing_id'])['Polarity'].mean().sort_values(ascending=False) 
+# Sort listings in this cluster by ratings according to peers in this group:
+listings_with_score = get_ranking(your_clusterID, your_groupID)
+# Get a unique list of all suggested listings' IDs:
+listingIDs_in_this_cluster = pd.unique(listings_with_score.index)
+# Get details of these listings:
+picked_listings_details_df = listing_details_df.loc[listingIDs_in_this_cluster]
 # Take only the listings in your destination city:
-picked_listings_details_df = picked_listings_details_df[picked_listings_details_df.city == destin_city]
-
-p('May I suggest:')
-p(picked_listings_details_df[['name']].head())
+picked_listings_details_df = picked_listings_details_df[picked_listings_details_df.city == destin_city].drop('city', axis=1)
+# Append the column of ratings:
+picked_listings_details_df['rating'] = listings_with_score[picked_listings_details_df.index]
+# Output:
+p('For your coming stay in', destin_city, 'May I suggest:')
+p(tabulate(picked_listings_details_df.head(), headers=['Name', 'Average Rating From Your Peers'], showindex=False, tablefmt="fancy_grid"))

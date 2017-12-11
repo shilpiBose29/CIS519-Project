@@ -24,7 +24,6 @@ import matplotlib.pyplot as plt
 
 verbose  = True
 random_state = 42 # Using 42, because it's the Answer to the Ultimate Question of Life, the Universe, and Everything.
-destin_city = 'New York'
 
 # Paths here
 your_ratings_to_listings_csv    = 'datasets/recommender_system/enduser_listings_ratings.csv'
@@ -176,6 +175,8 @@ plt.show()
 p('You people love listings in cluster', your_clusterID, '.')
 
 #%% Sort clusters by ratings from this group:
+
+destin_city = 'New York'
 
 def get_ranking(your_groupID,your_clusterID):
     '''Returns the list of listingIDs sorted to their ratings as provided by users specified peerIDs.'''
